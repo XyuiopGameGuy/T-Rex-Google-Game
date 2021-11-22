@@ -1,5 +1,3 @@
-  
- 
  var trex;
  var trexAnime;
  var ground;
