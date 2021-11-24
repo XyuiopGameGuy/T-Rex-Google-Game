@@ -1,4 +1,6 @@
- var trex;
+ //criando variaveis
+ var trexsurprised;
+ var trex; 
  var trexAnime;
  var ground;
  var chao;
@@ -10,8 +12,11 @@
  var cloudgroup;
  var obstaclegroup;
 
+ // carregando animacoes
  function preload(){
   trexAnime= loadAnimation("trex1.png", "trex3.png", "trex4.png");
+
+  trexsurprised= loadAnimation("trex_collided.png");
 
   ground= loadImage("ground2.png");
 
@@ -29,7 +34,7 @@
 
   obstaculo6= loadImage("obstacle6.png");
 }
-
+// criando os sprites 
 function setup(){
   createCanvas(600,200);
 
@@ -37,7 +42,12 @@ function setup(){
 
   trex.addAnimation("running", trexAnime);
 
+  trex.addAnimation("shocked", trexsurprised);
+  
   trex.scale= 0.7
+
+  trex.setCollider("circle", 0, 0, 40);
+  trex.debug= true;
 
   chao = createSprite(300, 180, 600, 26);
 
@@ -50,21 +60,23 @@ function setup(){
   var rand =  Math.round(random(1,100))
   console.log(rand)
 
-  cloudgroup= createGroup();
-  obstaclegroup= createGroup();
+  cloudgroup= new Group();
+  obstaclegroup= new Group();
 }
 
 function draw(){
   background("white");
 
-  trex.collide(chaoinvisivel);
-
   //console.log(frameCount);
 
   if (gamestate == PLAYGAME){
+    spawnClouds();
+    createObstacles();
+  
     if (chao.x < 0){
       chao.x= chao.width/2;
     } 
+
     chao.velocityX= -10
 
     if(keyDown("space") && trex.y > 152){
@@ -76,15 +88,18 @@ function draw(){
     if (trex.isTouching (obstaclegroup)){
       gamestate = ENDGAME;
    }
-}
+  }
     else if (gamestate == ENDGAME) {
+      trex.changeAnimation("shocked", trexsurprised);
       chao.velocityX= 0;
       trex.velocityY= 0;
-      cloud.velocityX= 0;
-      obstaculo.velocityX= 0;
+      obstaclegroup.setLifetimeEach(-1);
+      obstaclegroup.setVelocityXEach(0);
+      cloudgroup.setLifetimeEach(-1);
+      cloudgroup.setVelocityXEach(0);
     }
-    spawnClouds();
-    createObstacles();
+    // trex collidindo com o chaoinvisivel 
+    trex.collide(chaoinvisivel);
     drawSprites();
 }
 
@@ -94,7 +109,7 @@ function spawnClouds(){
    cloudgroup.add(cloud);
    cloud.addImage(nuvem);
    cloud.y= Math.round(random(10, 60));
-   cloud.scale= 0.8;
+   cloud.scale= 0.7;
    cloud.velocityX=-3;
    cloud.lifetime= 300;
    cloud.depth = trex.depth;
@@ -107,12 +122,11 @@ function createObstacles(){
    obstaculo= createSprite(600, 160, 50, 50);
    obstaculo.velocityX= -10;
    var randObstacle= Math.round(random(1, 6));
-   obstaculo.scale = 0.6;
+   obstaculo.scale = 0.8;
    obstaculo.lifetime= 300;
    obstaclegroup.add(obstaculo);
- }
 
-  switch(randObstacle){
+   switch(randObstacle){
    case 1: obstaculo.addImage(obstaculo1);
    break;
    case 2: obstaculo.addImage(obstaculo2);
@@ -126,4 +140,5 @@ function createObstacles(){
    case 6: obstaculo.addImage(obstaculo6);
    default: break;
   }
+}
 }
