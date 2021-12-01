@@ -11,9 +11,19 @@
  var gamestate = PLAYGAME;
  var cloudgroup;
  var obstaclegroup;
+ var checkpoint;
+ var die;
+ var jump;
+ var score = 0;
 
  // carregando animacoes
  function preload(){
+  checkpoint = loadSound("checkpoint.mp3");
+
+  die = loadSound("die.mp3");
+
+  jump = loadSound("jump.mp3");
+
   trexAnime= loadAnimation("trex1.png", "trex3.png", "trex4.png");
 
   trexsurprised= loadAnimation("trex_collided.png");
@@ -67,25 +77,34 @@ function setup(){
 function draw(){
   background("white");
 
+  fill("black");
+  text("score: " + score, 300, 50);
+
   //console.log(frameCount);
 
   if (gamestate == PLAYGAME){
     spawnClouds();
     createObstacles();
+    score= score + Math.round(frameRate()/60);
+    chao.velocityX= -(10 + 2*(score/200))
+
+    if (score > 0 && score % 200 == 0){
+      checkpoint.play();
+    }
   
     if (chao.x < 0){
       chao.x= chao.width/2;
     } 
 
-    chao.velocityX= -10
-
     if(keyDown("space") && trex.y > 152){
+      jump.play();
       trex.velocityY=-13
     }
     trex.velocityY=trex.velocityY +0.8
     console.log(trex.y);
     
     if (trex.isTouching (obstaclegroup)){
+      die.play();
       gamestate = ENDGAME;
    }
   }
@@ -120,9 +139,9 @@ function spawnClouds(){
 function createObstacles(){
   if (frameCount %80 == 0) {
    obstaculo= createSprite(600, 160, 50, 50);
-   obstaculo.velocityX= -10;
+   obstaculo.velocityX= -(10 + 2*(score/200))
    var randObstacle= Math.round(random(1, 6));
-   obstaculo.scale = 0.8;
+   obstaculo.scale = 0.7;
    obstaculo.lifetime= 300;
    obstaclegroup.add(obstaculo);
 
