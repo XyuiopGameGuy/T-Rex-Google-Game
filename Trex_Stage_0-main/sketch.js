@@ -1,4 +1,4 @@
- //criando variaveis
+  //criando variaveis
  var trexsurprised;
  var trex; 
  var trexAnime;
@@ -15,10 +15,18 @@
  var die;
  var jump;
  var score = 0;
+ var gameover;
+ var restart;
+ var gameoverimg;
+ var restartimg;
 
  // carregando animacoes
  function preload(){
   checkpoint = loadSound("checkpoint.mp3");
+
+  gameoverimg = loadImage("gameOver.png");
+
+  restartimg = loadImage("restart.png")
 
   die = loadSound("die.mp3");
 
@@ -46,7 +54,23 @@
 }
 // criando os sprites 
 function setup(){
-  createCanvas(600,200);
+  createCanvas(windowWidth,windowHeight);
+
+  restart = createSprite(width/2, height-550, 75, 64);
+
+  restart.visible=false;
+
+  restart.scale=0.5;
+
+  restart.addImage(restartimg);
+
+  gameover = createSprite(width/2, height-300, 381, 21);
+
+  gameover.addImage(gameoverimg);
+
+  gameover.visible=false;
+
+  gameover.scale=0.5
 
   trex= createSprite(100, 190, 89, 94) ;
 
@@ -59,9 +83,11 @@ function setup(){
   trex.setCollider("circle", 0, 0, 40);
   trex.debug= true;
 
-  chao = createSprite(300, 180, 600, 26);
+  chao = createSprite(width/2, height-480, 600, 26);
 
   chao.addImage(ground);
+
+  chao.scale=1.5;
 
   chaoinvisivel= createSprite(300, 190, 600, 10);
 
@@ -78,7 +104,7 @@ function draw(){
   background("white");
 
   fill("black");
-  text("score: " + score, 300, 50);
+  text("score: " + score, width-710, height-610);
 
   //console.log(frameCount);
 
@@ -96,9 +122,10 @@ function draw(){
       chao.x= chao.width/2;
     } 
 
-    if(keyDown("space") && trex.y > 152){
+    if(touches.lenght > 0 || keyDown("space") && trex.y > 152){
       jump.play();
-      trex.velocityY=-13
+      trex.velocityY=-13;
+      touches=[];
     }
     trex.velocityY=trex.velocityY +0.8
     console.log(trex.y);
@@ -109,6 +136,8 @@ function draw(){
    }
   }
     else if (gamestate == ENDGAME) {
+      gameover.visible=true;
+      restart.visible=true;
       trex.changeAnimation("shocked", trexsurprised);
       chao.velocityX= 0;
       trex.velocityY= 0;
@@ -116,6 +145,9 @@ function draw(){
       obstaclegroup.setVelocityXEach(0);
       cloudgroup.setLifetimeEach(-1);
       cloudgroup.setVelocityXEach(0);
+      if (mousePressedOver(restart)){
+        reset();
+    }
     }
     // trex collidindo com o chaoinvisivel 
     trex.collide(chaoinvisivel);
@@ -124,13 +156,13 @@ function draw(){
 
 function spawnClouds(){
   if (frameCount %60 == 0){
-   cloud=createSprite(600,100,40,10);
+   cloud=createSprite(width, 100, 40, 10);
    cloudgroup.add(cloud);
    cloud.addImage(nuvem);
    cloud.y= Math.round(random(10, 60));
    cloud.scale= 0.7;
    cloud.velocityX=-3;
-   cloud.lifetime= 300;
+   cloud.lifetime= 600;
    cloud.depth = trex.depth;
    trex.depth = trex.depth + 1
 }
@@ -138,10 +170,10 @@ function spawnClouds(){
 
 function createObstacles(){
   if (frameCount %80 == 0) {
-   obstaculo= createSprite(600, 160, 50, 50);
+   obstaculo= createSprite(width, 160, 50, 50);
    obstaculo.velocityX= -(10 + 2*(score/200))
    var randObstacle= Math.round(random(1, 6));
-   obstaculo.scale = 0.7;
+   obstaculo.scale = 0.8;
    obstaculo.lifetime= 300;
    obstaclegroup.add(obstaculo);
 
@@ -160,4 +192,15 @@ function createObstacles(){
    default: break;
   }
 }
+}
+function reset(){
+  gamestate = PLAYGAME;
+  trex.changeAnimation("running", trexAnime);
+  score=0;
+  trex.x=100;
+  trex.y=190;
+  cloudgroup.destroyEach();
+  obstaclegroup.destroyEach();
+  gameover.visible=false;
+  restart.visible=false;
 }
